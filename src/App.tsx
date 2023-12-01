@@ -6,7 +6,7 @@ function App() {
   return (
     <div
       className="App"
-      style={{ height: '100vh' }}
+      style={{ height: '60vw' }}
     >
       <Calendar
         currentDate={currentDate}

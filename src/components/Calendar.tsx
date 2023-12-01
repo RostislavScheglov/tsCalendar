@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Day } from './Day'
 import { weekDays } from '../constants'
 import { DatePicker } from './datePicker'
+import { Task } from './Task'
 
 interface Props {
   currentDate: Date
@@ -31,6 +32,22 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
     return lastDayOfMonth - firstDayOfMonth + 1
   }
 
+  const [days, setDays] = useState()
+
+  const monthDays = Array.from({
+    length: dayInMounth(firstDayOfMonth.getDate(), lastDayOfMonth.getDate()),
+  }).map((_, index) => {
+    const date = index + 1
+    return (
+      <Day
+        dayNumber={date}
+        dayIndex={index}
+      />
+    )
+  })
+
+  console.log(monthDays)
+
   useEffect(() => {
     const tasks = document.querySelectorAll('.tasks')
     const days = document.querySelectorAll('.days')
@@ -45,7 +62,6 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
       day.addEventListener('dragover', function (e) {
         e.preventDefault()
         day.addEventListener('drop', function (e) {
-          console.log('droped', selected)
           day.appendChild(selected)
         })
       })
@@ -57,14 +73,17 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
       className="calendarContainer"
       style={{
         display: 'flex',
-        height: '100vh',
+        height: '95%',
         flexDirection: 'column',
+        width: '85%',
+        margin: ' 2em auto',
       }}
     >
       <div
         className="calendarHeader"
         style={{
           width: '100%',
+          marginBottom: '0.5em',
         }}
       >
         <DatePicker
@@ -81,25 +100,34 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
+          height: '100%',
+          gridGap: '1.7em',
           textAlign: 'center',
         }}
       >
         {weekDays.map((day) => (
-          <div className="daysOfWeek">{day}</div>
+          <div
+            className="daysOfWeek"
+            style={{
+              alignSelf: 'end',
+            }}
+          >
+            {day}
+          </div>
         ))}
 
         {Array.from({ length: prefixDay }).map(() => {
           return <Day />
         })}
 
-        {Array.from({
-          length: dayInMounth(
-            firstDayOfMonth.getDate(),
-            lastDayOfMonth.getDate()
-          ),
-        }).map((_, index) => {
+        {monthDays.map((_, index) => {
           const date = index + 1
-          return <Day dayNumber={date} />
+          return (
+            <Day
+              dayNumber={date}
+              dayIndex={index}
+            />
+          )
         })}
         {Array.from({ length: sufixDay }).map(() => {
           return <Day />

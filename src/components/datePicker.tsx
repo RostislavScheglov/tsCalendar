@@ -36,9 +36,13 @@ export function DatePicker({ currentDate, setCurrentDate }: Props) {
     >
       <button onClick={prevYear}>{'<<'}</button>
       <button onClick={prevMonth}>{'<'}</button>
-      <p>
+      <div
+        style={{
+          margin: 'auto',
+        }}
+      >
         {monthName} {year}
-      </p>
+      </div>
       <button onClick={nextMonth}>{'>'}</button>
       <button onClick={nextYear}>{'>>'}</button>
     </div>
