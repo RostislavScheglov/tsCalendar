@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Day } from './Day'
+import { useForm } from 'react-hook-form'
+import { Day, Taskobject } from './Day'
 import { weekDays } from '../constants'
-import { DatePicker } from './datePicker'
-import { Task } from './Task'
+import { DatePicker } from './DatePicker'
+import { TaskLabel } from './TaskLabel'
 
 interface Props {
   currentDate: Date
@@ -32,41 +33,55 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
     return lastDayOfMonth - firstDayOfMonth + 1
   }
 
-  const [days, setDays] = useState()
-
-  const monthDays = Array.from({
-    length: dayInMounth(firstDayOfMonth.getDate(), lastDayOfMonth.getDate()),
-  }).map((_, index) => {
-    const date = index + 1
-    return (
-      <Day
-        dayNumber={date}
-        dayIndex={index}
-      />
-    )
-  })
-
-  console.log(monthDays)
-
-  useEffect(() => {
-    const tasks = document.querySelectorAll('.tasks')
-    const days = document.querySelectorAll('.days')
-    let selected: any
-    tasks.forEach((task) => {
-      task.addEventListener('dragstart', function (e) {
-        selected = e.target
-      })
+  const [days, setDays] = useState(
+    Array.from({
+      length: dayInMounth(firstDayOfMonth.getDate(), lastDayOfMonth.getDate()),
+    }).map(() => {
+      return <Day tasks={[]} />
     })
+  )
 
-    days.forEach((day) => {
-      day.addEventListener('dragover', function (e) {
-        e.preventDefault()
-        day.addEventListener('drop', function (e) {
-          day.appendChild(selected)
-        })
-      })
+  const [dayIndex, setDayIndex] = useState(0)
+
+  const [labels, setLabels]: any = useState([])
+
+  const addLabel = () => {
+    const values = getValues()
+    const label = {
+      labelText: values.labelText,
+      labelColor: values.labelColor,
+    }
+    setLabels([...labels, label])
+    resetField('labelText')
+  }
+
+  const deleteLabel = (index: number, labels: any) => {
+    setLabels(() => {
+      const allLabels = [...labels]
+      allLabels.splice(index, 1)
+      return allLabels
     })
-  }, [])
+  }
+
+  const addTask = (params: any) => {
+    const updatedDays = [...days]
+    updatedDays[dayIndex].props.tasks.push({
+      taskText: params.taskText,
+      taskLabels: labels,
+    })
+    setDays(updatedDays)
+    resetField('taskText')
+  }
+
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    resetField,
+    setError,
+    setValue,
+    formState: { errors },
+  } = useForm()
 
   return (
     <div
@@ -76,7 +91,7 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
         height: '95%',
         flexDirection: 'column',
         width: '85%',
-        margin: ' 2em auto',
+        margin: '2em auto',
       }}
     >
       <div
@@ -90,10 +105,10 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
           currentDate={currentDate}
           setCurrentDate={setCurrentDate}
         />
-        <input
+        {/* <input
           type="text"
           placeholder="Search Task"
-        ></input>
+        ></input> */}
       </div>
       <div
         className="calendarBody"
@@ -115,20 +130,66 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
             {day}
           </div>
         ))}
-
+        <form
+          id="recipeForm"
+          onSubmit={handleSubmit(addTask)}
+        >
+          <input
+            type="text"
+            placeholder="Add Task"
+            {...register('taskText', { required: 'Task Text required' })}
+          ></input>
+          <input
+            type="color"
+            id="colorPicker"
+            {...register('labelColor')}
+          ></input>
+          <input
+            type="text"
+            placeholder="Add Lable"
+            id="labelText"
+            {...register('labelText')}
+          ></input>
+          <button
+            type="button"
+            onClick={() => addLabel()}
+          >
+            Add Label
+          </button>
+          <div>
+            {labels.map((label: any, index: number) => (
+              <div>
+                <TaskLabel
+                  labelText={label.labelText}
+                  labelColor={label.labelColor}
+                />
+                <div onClick={() => deleteLabel(index, labels)}>--</div>
+              </div>
+            ))}
+          </div>
+          <button
+            className="submitBtn"
+            type="submit"
+          >
+            Add Task
+          </button>
+        </form>
         {Array.from({ length: prefixDay }).map(() => {
           return <Day />
         })}
 
-        {monthDays.map((_, index) => {
+        {days.map((day, index) => {
           const date = index + 1
           return (
             <Day
               dayNumber={date}
               dayIndex={index}
+              setDayIndex={setDayIndex}
+              tasks={day.props.tasks}
             />
           )
         })}
+
         {Array.from({ length: sufixDay }).map(() => {
           return <Day />
         })}

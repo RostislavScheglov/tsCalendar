@@ -1,13 +1,38 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Task } from './Task'
 
-interface Props extends React.PropsWithChildren {
-  tasks?: Array<string>
-  dayNumber?: number
-  dayIndex?: number
+export interface Taskobject {
+  taskText: string
+  taskLabels: [{ labelColor: string; labelText: string }]
 }
 
-export function Day({ dayNumber, dayIndex }: Props) {
+interface Props extends React.PropsWithChildren {
+  tasks?: Array<Taskobject>
+  dayNumber?: number
+  dayIndex?: number
+  setDayIndex?: (i: any) => any
+}
+
+const colorPickerPrewiev = () => {
+  const colorPicker = document.getElementById('colorPicker') as HTMLInputElement
+  const colorPreview = document.getElementById('labelText') as HTMLInputElement
+
+  const updateColorPreview = (color: string, preview: HTMLDivElement) => {
+    preview.style.backgroundColor = color
+  }
+  const handleColorChange = (event: Event) => {
+    const selectedColor = (event.target as HTMLInputElement).value
+    updateColorPreview(selectedColor, colorPreview)
+  }
+
+  colorPicker.addEventListener('input', (event) => handleColorChange(event))
+}
+
+const editTask = () => {}
+
+export function Day({ dayNumber, dayIndex, setDayIndex, tasks }: Props) {
+  const [taskState, setTaskState] = useState(tasks)
+
   return (
     <div
       key={dayIndex}
@@ -20,6 +45,12 @@ export function Day({ dayNumber, dayIndex }: Props) {
         padding: '10px',
         cursor: 'pointer',
       }}
+      onClick={() => {
+        if (setDayIndex!) {
+          setDayIndex(dayIndex)
+          colorPickerPrewiev()
+        }
+      }}
     >
       <div
         className="dayNumber"
@@ -30,14 +61,15 @@ export function Day({ dayNumber, dayIndex }: Props) {
       >
         {dayNumber}
       </div>
-      <input
-        id="taskInputField"
-        type="text"
-        style={{
-          display: 'none',
-        }}
-      ></input>
-      {dayNumber ? <Task taskText="asfas" /> : null}
+      {dayNumber && tasks
+        ? tasks.map((task, index) => (
+            <Task
+              taskText={task.taskText}
+              taskLabels={task.taskLabels}
+              taskIndex={index}
+            />
+          ))
+        : null}
     </div>
   )
 }

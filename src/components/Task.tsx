@@ -1,9 +1,34 @@
-interface Props extends React.PropsWithChildren {
-  taskText?: string
-  taskLabel?: string
-}
+import { useEffect } from 'react'
+import { Taskobject } from './Day'
+import { TaskLabel } from './TaskLabel'
 
-export function Task({ taskText, taskLabel }: Props) {
+interface TaskProps extends Taskobject {
+  taskIndex: number
+}
+export function Task({ taskText, taskLabels, taskIndex }: TaskProps) {
+  useEffect(() => {
+    const tasks = document.querySelectorAll('.tasks')
+    const days = document.querySelectorAll('.days')
+    let selected: any = null
+    tasks.forEach((task) => {
+      task.addEventListener('dragstart', function (e) {
+        selected = e.target
+      })
+    })
+    days.forEach((day) => {
+      day.addEventListener('dragover', function (e) {
+        e.preventDefault()
+      })
+      day.addEventListener('drop', function (e) {
+        e.preventDefault()
+        if (selected) {
+          day.appendChild(selected)
+          selected = null
+        }
+      })
+    })
+  }, [taskText])
+
   return (
     <div
       id="draggable"
@@ -18,8 +43,22 @@ export function Task({ taskText, taskLabel }: Props) {
         marginTop: '0.3em',
       }}
     >
-      <div>{taskLabel}</div>
-      <div>{taskText}</div>
+      <div>
+        {taskLabels.map((label: any) => (
+          <TaskLabel
+            labelText={label.labelText}
+            labelColor={label.labelColor}
+          />
+        ))}
+      </div>
+      <div
+        style={{
+          width: 'fit-content',
+          height: 'fit-content',
+        }}
+      >
+        {taskText}
+      </div>
     </div>
   )
 }
