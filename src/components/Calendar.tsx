@@ -1,6 +1,10 @@
+/** @jsxImportSource @emotion/react */
+
 import { Day } from './Day'
 import { weekDays } from '../constants'
 import { DatePicker } from './DatePicker'
+import { useEffect, useState } from 'react'
+import axios from 'axios'
 
 interface Props {
   currentDate: Date
@@ -29,6 +33,30 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
   ): number => {
     return lastDayOfMonth - firstDayOfMonth + 1
   }
+  const [holidays, setHolidays] = useState([])
+
+  const fetchHolidays = async () => {
+    try {
+      const holidays = await axios.get(
+        `https://date.nager.at/api/v3/NextPublicHolidaysWorldwide`
+      )
+      const uniqueHolidays = new Set()
+      const filteredArray = holidays.data.filter((obj: any) => {
+        if (!uniqueHolidays.has(obj.name)) {
+          uniqueHolidays.add(obj.name)
+          return true
+        }
+        return false
+      })
+      setHolidays(filteredArray)
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  useEffect(() => {
+    fetchHolidays()
+  }, [currentDate])
 
   const days = Array.from({
     length: dayInMounth(firstDayOfMonth.getDate(), lastDayOfMonth.getDate()),
@@ -39,7 +67,7 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
   return (
     <div
       className="calendarContainer"
-      style={{
+      css={{
         display: 'flex',
         height: '95%',
         flexDirection: 'column',
@@ -49,7 +77,7 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
     >
       <div
         className="calendarHeader"
-        style={{
+        css={{
           width: '100%',
           marginBottom: '0.5em',
         }}
@@ -65,7 +93,7 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
       </div>
       <div
         className="calendarBody"
-        style={{
+        css={{
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
           height: '100%',

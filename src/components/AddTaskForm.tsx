@@ -1,7 +1,9 @@
+/** @jsxImportSource @emotion/react */
+
 import React, { useEffect, useState } from 'react'
 import { Task } from './Task'
 import { FieldValues, SubmitHandler, useForm } from 'react-hook-form'
-import { TaskLabel } from './TaskLabel'
+import { Label, TaskLabel } from './TaskLabel'
 
 export interface Taskobject {
   taskText: string
@@ -9,17 +11,21 @@ export interface Taskobject {
 }
 
 interface Props extends React.PropsWithChildren {
-  addTask: SubmitHandler<FieldValues>
-  addLabel: () => void
-  deleteLabel: (index: number, labels: any) => void
+  formTitle: string
+  submitAction: SubmitHandler<FieldValues>
+  setLabels: (e: any) => void
+  // deleteLabel: (index: number, labels: any) => void
   labels: any
+  taskText?: string
 }
-console.log()
-export function CreateTaskForm({
-  addTask,
-  addLabel,
-  deleteLabel,
+
+export function TaskForm({
+  submitAction,
+  setLabels,
+  // deleteLabel,
   labels,
+  formTitle,
+  taskText,
 }: Props) {
   const {
     register,
@@ -31,12 +37,48 @@ export function CreateTaskForm({
     formState: { errors },
   } = useForm()
 
+  const setFormValues = () => {
+    setValue('taskText', taskText)
+  }
+
+  const deleteLabel = (index: number, labels: any): any => {
+    setLabels(() => {
+      const allLabels = [...labels]
+      allLabels.splice(index, 1)
+      return allLabels
+    })
+  }
+
+  useEffect(() => {
+    setFormValues()
+  }, [taskText])
+
+  const addLabel = () => {
+    const values = getValues()
+    const label = {
+      labelText: values.labelText,
+      labelColor: values.labelColor,
+    }
+    setLabels([...labels, label])
+    console.log(values)
+    resetField('labelText')
+  }
+
   return (
-    <div className="createTaskModal">
-      <form
-        id="recipeForm"
-        onSubmit={handleSubmit(addTask)}
-        onClick={(e) => e.stopPropagation()}
+    <form
+      id="recipeForm"
+      onSubmit={handleSubmit(submitAction)}
+      onClick={(e) => e.stopPropagation()}
+      className="createTaskForm"
+      css={{ maxWidth: '14em', margin: 'auto' }}
+    >
+      <div>{formTitle}</div>
+      <div
+        className="addLabels"
+        onClick={(e) => {
+          e.stopPropagation()
+        }}
+        css={{ display: 'flex' }}
       >
         <input
           type="color"
@@ -51,34 +93,42 @@ export function CreateTaskForm({
         ></input>
         <button
           type="button"
-          //   onClick={() => addLabel(getValues())}
+          onClick={() => addLabel()}
         >
           Add Label
         </button>
-        <div>
-          {labels.map((label: any, index: number) => (
-            <div>
-              <TaskLabel
-                labelText={label.labelText}
-                labelColor={label.labelColor}
-              />
-              <div onClick={() => deleteLabel(index, labels)}>--</div>
-            </div>
-          ))}
-        </div>
-        <input
-          type="text"
-          placeholder="Add Task"
-          {...register('taskText', { required: 'Task Text required' })}
-        ></input>
+      </div>
+      <div
+        className="labelsContainer"
+        css={{ display: 'flex', width: 'fit-content' }}
+      >
+        {labels.map((label: Label, index: number) => (
+          <div
+            className="labelContainer"
+            css={{ display: 'flex', width: 'fit-content' }}
+          >
+            <TaskLabel
+              label={label}
+              index={index}
+              // labelText={label.labelText}
+              // labelColor={label.labelColor}
+            />
+            <div onClick={() => deleteLabel(index, labels)}>-</div>
+          </div>
+        ))}
+      </div>
+      <input
+        type="text"
+        placeholder="Add Task"
+        {...register('taskText', { required: 'Task Text required' })}
+      ></input>
 
-        <button
-          className="submitBtn"
-          type="submit"
-        >
-          Add Task
-        </button>
-      </form>
-    </div>
+      <button
+        className="submitBtn"
+        type="submit"
+      >
+        Save
+      </button>
+    </form>
   )
 }
