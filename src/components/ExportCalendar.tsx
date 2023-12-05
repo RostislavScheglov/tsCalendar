@@ -1,18 +1,15 @@
 import React, { useRef } from 'react'
 import html2canvas from 'html2canvas'
+import { ExportComponentProps } from '../type'
 
-interface ExportComponentProps {
-  children: React.ReactNode
-}
-
-const ExportComponent: React.FC<ExportComponentProps> = ({ children }) => {
+const ExportComponent = ({ children }: ExportComponentProps) => {
   const componentRef = useRef<HTMLDivElement>(null)
 
   const handleExportClick = async () => {
     if (componentRef.current) {
       try {
         const canvas = await html2canvas(componentRef.current)
-        canvas.toBlob((blob: any) => {
+        canvas.toBlob((blob: Blob | null) => {
           if (blob) {
             const link = document.createElement('a')
             link.href = URL.createObjectURL(blob)

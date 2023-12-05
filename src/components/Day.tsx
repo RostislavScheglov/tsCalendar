@@ -1,58 +1,31 @@
 /** @jsxImportSource @emotion/react */
-import React, { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Task } from './Task'
-import { useForm } from 'react-hook-form'
-import { TaskForm } from './AddTaskForm'
+import { FieldValues, useForm } from 'react-hook-form'
+import { TaskForm } from './TaskForm'
+import {
+  DayProps,
+  LabelObject,
+  Taskobject,
+  formattedHolidayObject,
+} from '../type'
 
-export interface Taskobject extends React.PropsWithChildren {
-  taskText: string
-  taskLabels: [{ labelColor: string; labelText: string }]
-}
-
-interface Props extends React.PropsWithChildren {
-  tasks?: Array<Taskobject>
-  dayNumber?: string
-  dayIndex?: number
-  holidays?: any
-  fullDate?: Date
-  setDayIndex?: (i: any) => any
-}
-
-export const colorPickerPrewiev = () => {
-  const colorPicker = document.getElementById('colorPicker') as HTMLInputElement
-  const colorPreview = document.getElementById('labelText') as HTMLInputElement
-
-  const updateColorPreview = (color: string, preview: HTMLDivElement) => {
-    preview.style.backgroundColor = color
-  }
-  const handleColorChange = (event: Event) => {
-    const selectedColor = (event.target as HTMLInputElement).value
-    updateColorPreview(selectedColor, colorPreview)
-  }
-
-  colorPicker.addEventListener('input', (event) => handleColorChange(event))
-}
-
-export function Day({ dayNumber, dayIndex, fullDate, holidays }: Props) {
-  const [tasksState, setTaskState]: any = useState([])
-  const [labels, setLabels]: any = useState([])
+export function Day({ dayNumber, dayIndex, fullDate, holidays }: DayProps) {
+  const [tasksState, setTaskState] = useState<Array<Taskobject>>([])
+  const [labels, setLabels] = useState<Array<LabelObject>>([])
   const [createTaskModal, setCreateTaskModal] = useState(false)
 
-  const addTask = (params: any) => {
-    const task = {
+  const addTask = (params: FieldValues) => {
+    const task: Taskobject = {
       taskText: params.taskText,
       taskLabels: labels,
     }
     setTaskState([...tasksState, task])
     resetField('taskText')
     setLabels([])
+    setCreateTaskModal(!createTaskModal)
   }
-  let checkDate: any = undefined
-  useEffect(() => {
-    if (createTaskModal) {
-      colorPickerPrewiev()
-    }
-  }, [createTaskModal])
+  let checkDate: string | undefined = undefined
 
   const { resetField } = useForm()
 
@@ -62,7 +35,6 @@ export function Day({ dayNumber, dayIndex, fullDate, holidays }: Props) {
     const formattedMonth = month.toString().padStart(2, '0')
     checkDate = formattedMonth + '-' + day
   }
-
   return (
     <div
       key={dayIndex}
@@ -77,7 +49,7 @@ export function Day({ dayNumber, dayIndex, fullDate, holidays }: Props) {
         borderRadius: '4px',
       }}
       onClick={() => {
-        setCreateTaskModal(!createTaskModal)
+        if (dayNumber) setCreateTaskModal(!createTaskModal)
       }}
     >
       <div
@@ -85,6 +57,8 @@ export function Day({ dayNumber, dayIndex, fullDate, holidays }: Props) {
         css={{
           width: 'fit-content',
           height: 'fit-content',
+          fontWeight: 'bold',
+          fontSize: '18px',
         }}
       >
         {dayNumber}
@@ -99,12 +73,26 @@ export function Day({ dayNumber, dayIndex, fullDate, holidays }: Props) {
       ) : null}
 
       {dayNumber && tasksState
-        ? tasksState.map((task: Taskobject) => <Task task={task} />)
+        ? tasksState.map((task: Taskobject, index) => (
+            <Task
+              task={task}
+              taskIndex={index}
+            />
+          ))
         : null}
-      {checkDate
-        ? holidays.map((el: any) => {
+      {checkDate && holidays
+        ? holidays.map((el: formattedHolidayObject, index) => {
             if (el.date === checkDate) {
-              return <div>{el.name}</div>
+              return (
+                <div
+                  key={index}
+                  css={{
+                    margin: '0.5em 0',
+                  }}
+                >
+                  {el.name}
+                </div>
+              )
             }
           })
         : null}

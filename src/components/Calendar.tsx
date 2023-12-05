@@ -5,15 +5,9 @@ import { nagerApiCountryCodes, weekDays } from '../constants'
 import { DatePicker } from './DatePicker'
 import { useEffect, useState } from 'react'
 import axios, { AxiosResponse } from 'axios'
+import { CalendarProps, HolidayObject, formattedHolidayObject } from '../type'
 
-interface Props {
-  currentDate: Date
-  setCurrentDate: (value: Date) => void
-}
-interface HolidayData {
-  holidays: any[]
-}
-export function Calendar({ currentDate, setCurrentDate }: Props) {
+export function Calendar({ currentDate, setCurrentDate }: CalendarProps) {
   const firstDayOfMonth = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth(),
@@ -36,22 +30,21 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
     return lastDayOfMonth - firstDayOfMonth + 1
   }
 
-  const [holidays, setHolidays] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [holidays, setHolidays] = useState<Array<formattedHolidayObject>>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   const fetchHolidays = async () => {
     try {
-      const holidayDataArray: HolidayData[] = []
+      const holidayDataArray = []
       for (const countryCode of nagerApiCountryCodes) {
-        const response: AxiosResponse<HolidayData> = await axios.get(
+        const response: AxiosResponse = await axios.get(
           `https://date.nager.at/api/v3/PublicHolidays/${currentDate.getFullYear()}/${countryCode}`
         )
         holidayDataArray.push(response.data)
       }
       const subHolidayArray = holidayDataArray.flat(1)
-
       const uniqueHolidays = new Set()
-      const filteredArray = subHolidayArray.filter((obj: any) => {
+      const filteredArray = subHolidayArray.filter((obj: HolidayObject) => {
         if (!uniqueHolidays.has(obj.name) && obj.name !== undefined) {
           uniqueHolidays.add(obj.name)
           return true
@@ -59,12 +52,11 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
 
         return false
       })
-      const formattedHolidays: any = filteredArray.map((el: any) => {
-        return { date: el.date.substr(-5), name: el.name }
-      })
-      console.log(filteredArray)
+      const formattedHolidays: Array<formattedHolidayObject> =
+        filteredArray.map((el: HolidayObject) => {
+          return { date: el.date.substr(-5), name: el.name }
+        })
       setHolidays(formattedHolidays)
-
       setIsLoading(false)
     } catch (err) {
       console.log(err)
@@ -118,19 +110,22 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
           textAlign: 'center',
         }}
       >
-        {weekDays.map((day) => (
+        {weekDays.map((day, index) => (
           <div
+            key={index}
             className="daysOfWeek"
-            style={{
+            css={{
               alignSelf: 'end',
+              fontWeight: 'bold',
+              fontSize: '18px',
             }}
           >
             {day}
           </div>
         ))}
 
-        {Array.from({ length: prefixDay }).map(() => {
-          return <Day />
+        {Array.from({ length: prefixDay }).map((_, index) => {
+          return <Day dayIndex={index} />
         })}
 
         {days.map((_, index) => {
@@ -145,8 +140,8 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
           )
         })}
 
-        {Array.from({ length: sufixDay }).map(() => {
-          return <Day />
+        {Array.from({ length: sufixDay }).map((_, index) => {
+          return <Day dayIndex={index} />
         })}
       </div>
     </div>
