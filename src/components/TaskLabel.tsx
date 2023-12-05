@@ -1,6 +1,7 @@
 /** @jsxImportSource @emotion/react */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { colorPickerPrewiev } from './Day'
 
 export interface Label {
   labelText: string
@@ -30,10 +31,22 @@ export function TaskLabel({ label, index, setLabel, deleteLabel }: Props) {
     formState: { errors },
   } = useForm()
 
+  useEffect(() => {
+    if (editLabelModal) {
+      colorPickerPrewiev()
+    }
+  }, [editLabelModal])
+
   return (
     <div>
       {editLabelModal ? (
-        <form>
+        <form
+          id="recipeForm"
+          // onSubmit={handleSubmit(editLabel)}
+          onClick={(e) => e.stopPropagation()}
+          className="editLabelForm"
+          css={{ maxWidth: '14em', margin: 'auto', display: 'flex' }}
+        >
           <input
             type="color"
             id="colorPicker"
@@ -58,6 +71,7 @@ export function TaskLabel({ label, index, setLabel, deleteLabel }: Props) {
         <div
           css={{ backgroundColor: label.labelColor }}
           onClick={() => {
+            setFormValues()
             setEditLabelModal(!editLabelModal)
           }}
         >

@@ -24,7 +24,6 @@ export function DatePicker({ currentDate, setCurrentDate }: Props) {
   }
   const monthName = currentDate.toLocaleDateString(undefined, { month: 'long' })
   const year = currentDate.getFullYear()
-
   return (
     <div
       className="datePickerContainer"

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Label, TaskLabel } from './TaskLabel'
 import { useForm } from 'react-hook-form'
 import { TaskForm } from './AddTaskForm'
+import { colorPickerPrewiev } from './Day'
 
 export function Task({ task }: any) {
   const [taskState, setTaskState] = useState(task)
@@ -24,6 +25,12 @@ export function Task({ task }: any) {
     })
   }
   const { resetField } = useForm()
+
+  useEffect(() => {
+    if (editTaskModal) {
+      colorPickerPrewiev()
+    }
+  }, [editTaskModal])
 
   useEffect(() => {
     const tasks = document.querySelectorAll('.tasks')
@@ -82,7 +89,7 @@ export function Task({ task }: any) {
             className="taskLabels"
             css={{ display: 'flex', justifyContent: 'space-around' }}
           >
-            {taskState.taskLabels.map((label: Label, index: number) => (
+            {labels.map((label: Label, index: number) => (
               <TaskLabel
                 label={label}
                 setLabel={setLabels}

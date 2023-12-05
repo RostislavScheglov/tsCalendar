@@ -1,16 +1,18 @@
 /** @jsxImportSource @emotion/react */
 
 import { Day } from './Day'
-import { weekDays } from '../constants'
+import { nagerApiCountryCodes, weekDays } from '../constants'
 import { DatePicker } from './DatePicker'
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 
 interface Props {
   currentDate: Date
   setCurrentDate: (value: Date) => void
 }
-
+interface HolidayData {
+  holidays: any[]
+}
 export function Calendar({ currentDate, setCurrentDate }: Props) {
   const firstDayOfMonth = new Date(
     currentDate.getFullYear(),
@@ -33,22 +35,37 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
   ): number => {
     return lastDayOfMonth - firstDayOfMonth + 1
   }
+
   const [holidays, setHolidays] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
 
   const fetchHolidays = async () => {
     try {
-      const holidays = await axios.get(
-        `https://date.nager.at/api/v3/NextPublicHolidaysWorldwide`
-      )
+      const holidayDataArray: HolidayData[] = []
+      for (const countryCode of nagerApiCountryCodes) {
+        const response: AxiosResponse<HolidayData> = await axios.get(
+          `https://date.nager.at/api/v3/PublicHolidays/${currentDate.getFullYear()}/${countryCode}`
+        )
+        holidayDataArray.push(response.data)
+      }
+      const subHolidayArray = holidayDataArray.flat(1)
+
       const uniqueHolidays = new Set()
-      const filteredArray = holidays.data.filter((obj: any) => {
-        if (!uniqueHolidays.has(obj.name)) {
+      const filteredArray = subHolidayArray.filter((obj: any) => {
+        if (!uniqueHolidays.has(obj.name) && obj.name !== undefined) {
           uniqueHolidays.add(obj.name)
           return true
         }
+
         return false
       })
-      setHolidays(filteredArray)
+      const formattedHolidays: any = filteredArray.map((el: any) => {
+        return { date: el.date.substr(-5), name: el.name }
+      })
+      console.log(filteredArray)
+      setHolidays(formattedHolidays)
+
+      setIsLoading(false)
     } catch (err) {
       console.log(err)
     }
@@ -63,6 +80,10 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
   }).map(() => {
     return <Day />
   })
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
 
   return (
     <div
@@ -86,10 +107,6 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
           currentDate={currentDate}
           setCurrentDate={setCurrentDate}
         />
-        {/* <input
-          type="text"
-          placeholder="Search Task"
-        ></input> */}
       </div>
       <div
         className="calendarBody"
@@ -120,8 +137,10 @@ export function Calendar({ currentDate, setCurrentDate }: Props) {
           const date = index + 1
           return (
             <Day
-              dayNumber={date}
+              dayNumber={date.toString()}
               dayIndex={index}
+              fullDate={currentDate}
+              holidays={holidays}
             />
           )
         })}

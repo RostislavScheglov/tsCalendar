@@ -1,7 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import React, { useEffect, useState } from 'react'
 import { Task } from './Task'
-import { Label, LabelObject, TaskLabel } from './TaskLabel'
 import { useForm } from 'react-hook-form'
 import { TaskForm } from './AddTaskForm'
 
@@ -12,12 +11,14 @@ export interface Taskobject extends React.PropsWithChildren {
 
 interface Props extends React.PropsWithChildren {
   tasks?: Array<Taskobject>
-  dayNumber?: number
+  dayNumber?: string
   dayIndex?: number
+  holidays?: any
+  fullDate?: Date
   setDayIndex?: (i: any) => any
 }
 
-const colorPickerPrewiev = () => {
+export const colorPickerPrewiev = () => {
   const colorPicker = document.getElementById('colorPicker') as HTMLInputElement
   const colorPreview = document.getElementById('labelText') as HTMLInputElement
 
@@ -32,10 +33,9 @@ const colorPickerPrewiev = () => {
   colorPicker.addEventListener('input', (event) => handleColorChange(event))
 }
 
-export function Day({ dayNumber, dayIndex }: Props) {
+export function Day({ dayNumber, dayIndex, fullDate, holidays }: Props) {
   const [tasksState, setTaskState]: any = useState([])
   const [labels, setLabels]: any = useState([])
-
   const [createTaskModal, setCreateTaskModal] = useState(false)
 
   const addTask = (params: any) => {
@@ -47,7 +47,7 @@ export function Day({ dayNumber, dayIndex }: Props) {
     resetField('taskText')
     setLabels([])
   }
-
+  let checkDate: any = undefined
   useEffect(() => {
     if (createTaskModal) {
       colorPickerPrewiev()
@@ -55,6 +55,13 @@ export function Day({ dayNumber, dayIndex }: Props) {
   }, [createTaskModal])
 
   const { resetField } = useForm()
+
+  if (holidays && dayNumber && fullDate) {
+    const day = dayNumber.padStart(2, '0')
+    const month = 1 + fullDate.getMonth()
+    const formattedMonth = month.toString().padStart(2, '0')
+    checkDate = formattedMonth + '-' + day
+  }
 
   return (
     <div
@@ -64,9 +71,10 @@ export function Day({ dayNumber, dayIndex }: Props) {
       css={{
         width: '100%',
         height: '100%',
-        backgroundColor: '#d9d9d9',
+        backgroundColor: '#F5F7F9',
         padding: '10px',
         cursor: 'pointer',
+        borderRadius: '4px',
       }}
       onClick={() => {
         setCreateTaskModal(!createTaskModal)
@@ -91,12 +99,14 @@ export function Day({ dayNumber, dayIndex }: Props) {
       ) : null}
 
       {dayNumber && tasksState
-        ? tasksState.map((task: Taskobject) => (
-            <Task
-              task={task}
-              // taskIndex={index}
-            />
-          ))
+        ? tasksState.map((task: Taskobject) => <Task task={task} />)
+        : null}
+      {checkDate
+        ? holidays.map((el: any) => {
+            if (el.date === checkDate) {
+              return <div>{el.name}</div>
+            }
+          })
         : null}
     </div>
   )

@@ -14,7 +14,6 @@ interface Props extends React.PropsWithChildren {
   formTitle: string
   submitAction: SubmitHandler<FieldValues>
   setLabels: (e: any) => void
-  // deleteLabel: (index: number, labels: any) => void
   labels: any
   taskText?: string
 }
@@ -22,20 +21,11 @@ interface Props extends React.PropsWithChildren {
 export function TaskForm({
   submitAction,
   setLabels,
-  // deleteLabel,
   labels,
   formTitle,
   taskText,
 }: Props) {
-  const {
-    register,
-    handleSubmit,
-    getValues,
-    resetField,
-    setError,
-    setValue,
-    formState: { errors },
-  } = useForm()
+  const { register, handleSubmit, getValues, resetField, setValue } = useForm()
 
   const setFormValues = () => {
     setValue('taskText', taskText)
