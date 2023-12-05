@@ -1,4 +1,5 @@
-import React, { useRef } from 'react'
+/** @jsxImportSource @emotion/react */
+import { useRef } from 'react'
 import html2canvas from 'html2canvas'
 import { ExportComponentProps } from '../type'
 
@@ -25,8 +26,21 @@ const ExportComponent = ({ children }: ExportComponentProps) => {
 
   return (
     <div>
+      <button
+        onClick={handleExportClick}
+        css={{
+          marginLeft: '12em',
+          backgroundColor: 'transparent',
+          border: '1px solid black',
+          borderRadius: '6px',
+          width: '12em',
+          padding: '0.5em',
+          cursor: 'poiner',
+        }}
+      >
+        Export to JPEG
+      </button>
       <div ref={componentRef}>{children}</div>
-      <button onClick={handleExportClick}>Export to JPEG</button>
     </div>
   )
 }

@@ -30,6 +30,7 @@ export function TaskLabel({ label, labels, index, setLabel }: LabelTaskProps) {
 
   return (
     <div
+      key={index}
       className="labelContainer"
       css={{
         display: 'flex',
